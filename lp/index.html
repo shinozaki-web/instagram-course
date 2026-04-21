@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude×Instagram自動化講座 | しのざき</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.7;
+    }
+
+    /* ユーティリティ */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ヒーロー */
+    #hero {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #fff;
+      padding: 64px 24px 56px;
+      text-align: center;
+    }
+
+    #hero .tag {
+      display: inline-block;
+      background: #f97316;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    #hero h1 {
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 800;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    #hero h1 span {
+      color: #f97316;
+    }
+
+    #hero p {
+      font-size: 15px;
+      color: #ccc;
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: #f97316;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 18px 48px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .cta-btn:hover {
+      background: #ea6c0a;
+      transform: translateY(-1px);
+    }
+
+    .price-note {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    /* 悩みセクション */
+    #pain {
+      background: #f5f5f5;
+      padding: 56px 24px;
+    }
+
+    #pain h2 {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .pain-list {
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pain-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 15px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .pain-item .icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* 解決セクション */
+    #solution {
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    #solution .eyebrow {
+      font-size: 13px;
+      color: #f97316;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    #solution h2 {
+      font-size: clamp(20px, 4vw, 26px);
+      font-weight: 800;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    #solution h2 span { color: #f97316; }
+
+    #solution p {
+      font-size: 15px;
+      color: #555;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* できること */
+    #outcomes {
+      background: #fff7ed;
+      padding: 56px 24px;
+    }
+
+    #outcomes h2 {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .outcome-grid {
+      max-width: 560px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .outcome-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 18px;
+      border-top: 3px solid #f97316;
+    }
+
+    .outcome-card .num {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f97316;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .outcome-card p {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* カリキュラム */
+    #curriculum {
+      padding: 56px 24px;
+    }
+
+    #curriculum h2 {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .chapter-list {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chapter-item {
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .chapter-item .ch-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f97316;
+      background: #fff7ed;
+      padding: 4px 10px;
+      border-radius: 100px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .chapter-item h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .chapter-item p {
+      font-size: 13px;
+      color: #777;
+    }
+
+    /* 講師 */
+    #instructor {
+      background: #f5f5f5;
+      padding: 56px 24px;
+    }
+
+    #instructor h2 {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .instructor-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px 28px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .instructor-photo {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+    }
+
+    .instructor-info h3 {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .instructor-info .title {
+      font-size: 12px;
+      color: #f97316;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .instructor-info p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    /* 価格 */
+    #pricing {
+      padding: 56px 24px;
+      text-align: center;
+    }
+
+    #pricing h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 32px;
+    }
+
+    .price-card {
+      max-width: 420px;
+      margin: 0 auto;
+      border: 2px solid #f97316;
+      border-radius: 12px;
+      padding: 36px 28px;
+    }
+
+    .price-card .plan-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f97316;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .price-card .price {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .price-card .price span {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .price-card .tax {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    .price-card ul {
+      text-align: left;
+      list-style: none;
+      margin-bottom: 28px;
+    }
+
+    .price-card li {
+      font-size: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-card li::before {
+      content: "✓";
+      color: #f97316;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* FAQ */
+    #faq {
+      background: #f5f5f5;
+      padding: 56px 24px;
+    }
+
+    #faq h2 {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .faq-list {
+      max-width: 560px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px 20px;
+    }
+
+    .faq-item .q {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .faq-item .q::before {
+      content: "Q";
+      color: #f97316;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .faq-item .a {
+      font-size: 14px;
+      color: #555;
+      display: flex;
+      gap: 10px;
+    }
+
+    .faq-item .a::before {
+      content: "A";
+      color: #999;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    /* フッター CTA */
+    #footer-cta {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    #footer-cta h2 {
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: 800;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    #footer-cta p {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 32px;
+    }
+
+    footer {
+      background: #111;
+      color: #666;
+      text-align: center;
+      font-size: 12px;
+      padding: 20px 24px;
+    }
+
+    @media (max-width: 560px) {
+      .outcome-grid { grid-template-columns: 1fr; }
+      .instructor-card { flex-direction: column; align-items: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ヒーロー -->
+<section id="hero">
+  <div class="container">
+    <div class="tag">オンライン講座 — 2,980円</div>
+    <h1>SNS集客、<span>毎日悩んでいませんか？</span><br>Claudeを使えば投稿文が<span>5分</span>で完成します</h1>
+    <p>AIを使いこなして、週5投稿を週1時間で回す仕組みを作りましょう。ITの国家資格を持つシェフが、経営者目線で教えます。</p>
+    <a href="https://buy.stripe.com/dRmfZi3sqdye3g2bejgA800" class="cta-btn">今すぐ受講する（2,980円）</a>
+    <p class="price-note">買い切り・返金保証なし・ブラウザで完結</p>
+  </div>
+</section>
+
+<!-- 悩み -->
+<section id="pain">
+  <div class="container">
+    <h2>こんな悩みありませんか？</h2>
+    <div class="pain-list">
+      <div class="pain-item">
+        <span class="icon">😩</span>
+        <span>毎日「今日何を投稿しよう」と悩んでいる</span>
+      </div>
+      <div class="pain-item">
+        <span class="icon">⏰</span>
+        <span>投稿文を書くのに30分〜1時間かかってしまう</span>
+      </div>
+      <div class="pain-item">
+        <span class="icon">📉</span>
+        <span>投稿が続かなくて、フォロワーが全然増えない</span>
+      </div>
+      <div class="pain-item">
+        <span class="icon">🤖</span>
+        <span>AIを使ってみたいけど何から始めればいいかわからない</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 解決 -->
+<section id="solution">
+  <div class="container">
+    <p class="eyebrow">SOLUTION</p>
+    <h2>Claudeを使えば、<br><span>投稿文は5分で完成します</span></h2>
+    <p>プロンプト（AIへの指示文）さえ覚えてしまえば、あとはコピペして送るだけ。文章・ハッシュタグ・構成まで全部AIが作ってくれます。</p>
+  </div>
+</section>
+
+<!-- できること -->
+<section id="outcomes">
+  <div class="container">
+    <h2>受講後にできること</h2>
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <p class="num">OUTCOME 01</p>
+        <p>Claudeに無料でログインして使い始められる</p>
+      </div>
+      <div class="outcome-card">
+        <p class="num">OUTCOME 02</p>
+        <p>3種類の投稿文（教育・ストーリー・告知）が作れる</p>
+      </div>
+      <div class="outcome-card">
+        <p class="num">OUTCOME 03</p>
+        <p>1週間分の投稿ネタを30分でまとめて作れる</p>
+      </div>
+      <div class="outcome-card">
+        <p class="num">OUTCOME 04</p>
+        <p>週1時間で週5投稿を維持できる仕組みが組める</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- カリキュラム -->
+<section id="curriculum">
+  <div class="container">
+    <h2>カリキュラム</h2>
+    <div class="chapter-list">
+      <div class="chapter-item">
+        <span class="ch-num">CH 0</span>
+        <div>
+          <h3>はじめに</h3>
+          <p>この講座で学べること・全体の流れ（5分）</p>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <span class="ch-num">CH 1</span>
+        <div>
+          <h3>Claudeとは何か</h3>
+          <p>特徴・Googleアカウントでのログイン・基本操作（10分）</p>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <span class="ch-num">CH 2</span>
+        <div>
+          <h3>プロンプトの基本</h3>
+          <p>良いプロンプトの条件・実践（15分）</p>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <span class="ch-num">CH 3</span>
+        <div>
+          <h3>Instagram投稿文を作る</h3>
+          <p>教育系・ストーリー系・商品告知の3種類を実践（25分）</p>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <span class="ch-num">CH 4</span>
+        <div>
+          <h3>週間投稿カレンダーを自動作成</h3>
+          <p>1週間分のネタをまとめて作る（15分）</p>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <span class="ch-num">CH 5</span>
+        <div>
+          <h3>運用ルーティンを組む</h3>
+          <p>週1時間で週5投稿を維持する仕組み（10分）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 講師 -->
+<section id="instructor">
+  <div class="container">
+    <h2>講師紹介</h2>
+    <div class="instructor-card">
+      <img src="photo.jpg" alt="しのざき" class="instructor-photo" />
+      <div class="instructor-info">
+        <h3>しのざき</h3>
+        <p class="title">ITの国家資格を持つ門司港のシェフ</p>
+        <p>飲食店を経営しながらITの国家資格を保有。現場の経営者だからこそわかる「時間がない中でのSNS集客」の悩みをAIで解決してきた。同じ悩みを持つ経営者に向けて、すぐ使える形で発信中。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 価格 -->
+<section id="pricing">
+  <div class="container">
+    <h2>料金</h2>
+    <div class="price-card">
+      <p class="plan-name">Claude×Instagram自動化講座</p>
+      <p class="price"><span>¥</span>2,980</p>
+      <p class="tax">税込・買い切り</p>
+      <ul>
+        <li>全5チャプター・14レッスン</li>
+        <li>ブラウザで完結（アプリ不要）</li>
+        <li>購入後すぐに受講開始</li>
+        <li>プロンプトテンプレート付き</li>
+        <li>スマホ・PC両対応</li>
+      </ul>
+      <a href="https://buy.stripe.com/dRmfZi3sqdye3g2bejgA800" class="cta-btn" style="width:100%;display:block;text-align:center;">今すぐ受講する</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <h2>よくある質問</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <p class="q">AIを使ったことがなくても大丈夫ですか？</p>
+        <p class="a">大丈夫です。Claudeへのログインから丁寧に解説しています。スマホとブラウザがあれば始められます。</p>
+      </div>
+      <div class="faq-item">
+        <p class="q">どんな業種でも使えますか？</p>
+        <p class="a">はい。飲食・美容・コンサル・物販など、どんな業種でも使えるプロンプトを[ ]の中を書き換えるだけで対応できます。</p>
+      </div>
+      <div class="faq-item">
+        <p class="q">受講期限はありますか？</p>
+        <p class="a">ありません。購入後はいつでも何度でも受講できます。</p>
+      </div>
+      <div class="faq-item">
+        <p class="q">Claudeの利用料金はかかりますか？</p>
+        <p class="a">無料プランで十分です。この講座で使う機能はすべて無料で利用できます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- フッターCTA -->
+<section id="footer-cta">
+  <div class="container">
+    <h2>今日から、投稿に<br>悩む時間をゼロにしよう</h2>
+    <p>2,980円で、毎日の投稿作業が変わります。</p>
+    <a href="https://buy.stripe.com/dRmfZi3sqdye3g2bejgA800" class="cta-btn">今すぐ受講する（2,980円）</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2024 しのざき All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

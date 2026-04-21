@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude×Instagram自動化講座</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* サイドバー */
+    #sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    #sidebar-header {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid #333;
+    }
+
+    #sidebar-header h1 {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    #progress-bar-wrap {
+      margin-top: 12px;
+      background: #333;
+      border-radius: 4px;
+      height: 6px;
+    }
+
+    #progress-bar {
+      height: 6px;
+      background: #f97316;
+      border-radius: 4px;
+      transition: width 0.4s;
+      width: 0%;
+    }
+
+    #progress-text {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 6px;
+    }
+
+    nav { padding: 12px 0; }
+
+    .chapter-group { margin-bottom: 4px; }
+
+    .chapter-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #888;
+      letter-spacing: 0.08em;
+      padding: 8px 20px 4px;
+      text-transform: uppercase;
+    }
+
+    .lesson-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 13px;
+      padding: 10px 20px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lesson-btn:hover { background: #2a2a2a; color: #fff; }
+    .lesson-btn.active { background: #f97316; color: #fff; }
+    .lesson-btn.done .check { color: #4ade80; }
+
+    .check {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: #555;
+    }
+
+    /* メインエリア */
+    #main {
+      margin-left: 280px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #topbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #topbar-title { font-size: 15px; font-weight: 600; }
+
+    #complete-btn {
+      background: #f97316;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #complete-btn:hover { background: #ea6c0a; }
+    #complete-btn.done { background: #4ade80; color: #1a1a1a; }
+
+    #content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 32px 80px;
+      width: 100%;
+    }
+
+    #content h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    #content .chapter-tag {
+      font-size: 12px;
+      color: #f97316;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    #content .divider {
+      border: none;
+      border-top: 1px solid #e5e5e5;
+      margin: 24px 0;
+    }
+
+    #content p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    #content h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 28px 0 12px;
+    }
+
+    #content ul, #content ol {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    #content li {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .callout {
+      background: #fff7ed;
+      border-left: 4px solid #f97316;
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #7c3d12;
+    }
+
+    .practice-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 24px 0;
+    }
+
+    .practice-box h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #166534;
+      margin-bottom: 10px;
+    }
+
+    .practice-box p {
+      font-size: 14px;
+      color: #166534;
+      margin-bottom: 0;
+    }
+
+    .prompt-box {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 16px 0;
+      color: #e5e5e5;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+    }
+
+    .nav-btn {
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+
+    .nav-btn.prev {
+      background: #e5e5e5;
+      color: #333;
+    }
+
+    .nav-btn.prev:hover { background: #d4d4d4; }
+
+    .nav-btn.next {
+      background: #f97316;
+      color: #fff;
+    }
+
+    .nav-btn.next:hover { background: #ea6c0a; }
+
+    @media (max-width: 768px) {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+      #content { padding: 32px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- サイドバー -->
+<aside id="sidebar">
+  <div id="sidebar-header">
+    <h1>Claude×Instagram<br>自動化講座</h1>
+    <div id="progress-bar-wrap">
+      <div id="progress-bar"></div>
+    </div>
+    <p id="progress-text">0 / 14 完了</p>
+  </div>
+  <nav id="nav"></nav>
+</aside>
+
+<!-- メインエリア -->
+<div id="main">
+  <div id="topbar">
+    <span id="topbar-title"></span>
+    <button id="complete-btn" onclick="toggleComplete()">完了にする</button>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+  const LESSONS = [
+    {
+      chapter: "CHAPTER 0：はじめに",
+      title: "この講座で学べること",
+      content: `
+        <span class="chapter-tag">CHAPTER 0 — はじめに</span>
+        <h2>この講座で学べること</h2>
+        <hr class="divider">
+        <p>この講座では、AI「Claude」を使ってInstagramの投稿文を自動で作る方法を学びます。</p>
+        <p>毎日ネタを考えて、文章を書いて、ハッシュタグを考えて…そんな作業に時間を取られていませんか？</p>
+        <p>この講座を受講すると、<strong>1本の投稿文が5分以内に完成</strong>するようになります。</p>
+
+        <h3>受講後にできること</h3>
+        <ul>
+          <li>Claudeを使いこなせるようになる</li>
+          <li>教育系・ストーリー系・商品告知の3種類の投稿が作れる</li>
+          <li>1週間分の投稿ネタを30分でまとめて作れる</li>
+          <li>週1時間で週5投稿を維持できる仕組みが組める</li>
+        </ul>
+
+        <div class="callout">
+          📌 この講座はテキスト形式です。上から順番に読み進めて、実践パートは実際に手を動かしてください。
+        </div>
+
+        <h3>全体の流れ</h3>
+        <ol>
+          <li>CHAPTER 1：Claudeとは何か・ログイン方法</li>
+          <li>CHAPTER 2：プロンプトの基本</li>
+          <li>CHAPTER 3：Instagram投稿文を作る</li>
+          <li>CHAPTER 4：週間カレンダーを自動作成</li>
+          <li>CHAPTER 5：運用ルーティンを組む</li>
+        </ol>
+
+        <p>所要時間は約60〜90分です。さっそく始めましょう！</p>
+      `
+    },
+    {
+      chapter: "CHAPTER 1：Claudeとは何か",
+      title: "Claudeの特徴と他のAIとの違い",
+      content: `
+        <span class="chapter-tag">CHAPTER 1 — Claudeとは何か</span>
+        <h2>Claudeの特徴と他のAIとの違い</h2>
+        <hr class="divider">
+        <p>Claudeは、Anthropicという会社が開発したAIアシスタントです。</p>
+        <p>ChatGPTと同じような「文章を書いてくれるAI」ですが、Claudeには次のような特徴があります。</p>
+
+        <h3>Claudeの3つの強み</h3>
+        <ul>
+          <li><strong>日本語が自然：</strong>日本語の文章が非常に自然で読みやすい</li>
+          <li><strong>指示に忠実：</strong>細かい条件を指定するとその通りに書いてくれる</li>
+          <li><strong>無料で使える：</strong>Googleアカウントがあれば今すぐ無料で始められる</li>
+        </ul>
+
+        <div class="callout">
+          💡 Instagram投稿文の作成には、Claudeが特に向いています。文章のトーン・文字数・ハッシュタグまで、指示した通りに仕上げてくれます。
+        </div>
+
+        <h3>ChatGPTとの比較</h3>
+        <ul>
+          <li>ChatGPT → 世界的に有名、英語に強い</li>
+          <li>Claude → 日本語の自然さ・指示への忠実さで優れる</li>
+        </ul>
+        <p>どちらも優秀ですが、日本語のSNS投稿文作成にはClaudeを使うのがおすすめです。</p>
+      `
+    },
+    {
+      chapter: "CHAPTER 1：Claudeとは何か",
+      title: "Googleアカウントでのログイン手順",
+      content: `
+        <span class="chapter-tag">CHAPTER 1 — Claudeとは何か</span>
+        <h2>Googleアカウントでのログイン手順</h2>
+        <hr class="divider">
+        <p>Claudeはブラウザで使えます。アプリのインストールは不要です。</p>
+
+        <h3>ログイン手順</h3>
+        <ol>
+          <li>ブラウザ（Chrome推奨）を開く</li>
+          <li>アドレスバーに <strong>claude.ai</strong> と入力してEnter</li>
+          <li>「Googleで続ける」をクリック</li>
+          <li>使いたいGoogleアカウントを選ぶ</li>
+          <li>ホーム画面が表示されたら完了</li>
+        </ol>
+
+        <div class="callout">
+          📌 無料プランでも今回の講座で使う機能はすべて利用できます。有料プランへのアップグレードは不要です。
+        </div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：今すぐログインしてみよう</h4>
+          <p>claude.ai を開いてGoogleアカウントでログインしてください。ホーム画面が表示されたら次に進みましょう。</p>
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 1：Claudeとは何か",
+      title: "画面の見方・基本操作",
+      content: `
+        <span class="chapter-tag">CHAPTER 1 — Claudeとは何か</span>
+        <h2>画面の見方・基本操作</h2>
+        <hr class="divider">
+        <p>ログインするとホーム画面が表示されます。シンプルな作りなので、すぐ慣れます。</p>
+
+        <h3>画面の構成</h3>
+        <ul>
+          <li><strong>左サイドバー：</strong>過去の会話履歴が一覧で表示される</li>
+          <li><strong>中央：</strong>Claudeとのチャット画面</li>
+          <li><strong>下部の入力欄：</strong>ここに文章（プロンプト）を入力して送る</li>
+        </ul>
+
+        <h3>基本の使い方</h3>
+        <ol>
+          <li>下の入力欄に文章を入力する</li>
+          <li>Enterキー（または送信ボタン）で送信する</li>
+          <li>Claudeが返答してくれる</li>
+          <li>気に入らなければ「もっと〜にして」と追加で指示する</li>
+        </ol>
+
+        <div class="callout">
+          💡 会話は何度でもやり直せます。最初から完璧な文章を出そうとせず、まず送ってみてから調整するのが正しい使い方です。
+        </div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：試しに話しかけてみよう</h4>
+          <p>入力欄に「こんにちは。自己紹介してください。」と入力して送ってみてください。Claudeが返事をしてくれるはずです。</p>
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 2：プロンプトの基本",
+      title: "プロンプトとは何か",
+      content: `
+        <span class="chapter-tag">CHAPTER 2 — プロンプトの基本</span>
+        <h2>プロンプトとは何か</h2>
+        <hr class="divider">
+        <p>「プロンプト」とは、Claudeに送る指示文のことです。</p>
+        <p>Claudeはあなたの指示に従って動きます。つまり、<strong>プロンプトの質が出力の質を決めます。</strong></p>
+
+        <h3>プロンプトの例（悪い例）</h3>
+        <div class="prompt-box">Instagram投稿を作って</div>
+        <p>これだと情報が少なすぎて、Claudeはどんな投稿を作ればいいか判断できません。</p>
+
+        <h3>プロンプトの例（良い例）</h3>
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。
+飲食店オーナー向けに「Claudeで投稿文が5分で作れる」というテーマで投稿文を作ってください。
+文字数は200〜300文字、改行多め、最後にハッシュタグを10個つけてください。</div>
+        <p>具体的な条件を書くと、使える投稿文が一発で出てきます。</p>
+
+        <div class="callout">
+          💡 プロンプトは「誰に・何を・どんな形で」の3つを意識するだけで質が大きく上がります。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 2：プロンプトの基本",
+      title: "良いプロンプトの3つの条件",
+      content: `
+        <span class="chapter-tag">CHAPTER 2 — プロンプトの基本</span>
+        <h2>良いプロンプトの3つの条件</h2>
+        <hr class="divider">
+        <p>良いプロンプトには共通点があります。次の3つを意識するだけで、出力の質が劇的に上がります。</p>
+
+        <h3>① 役割を与える</h3>
+        <p>冒頭に「あなたは〇〇です」と役割を設定します。</p>
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。</div>
+
+        <h3>② 条件を具体的に書く</h3>
+        <p>文字数・トーン・構成など、細かく指定するほど精度が上がります。</p>
+        <div class="prompt-box">・文字数：200〜300文字
+・改行多め
+・最後にCTA（行動を促す一言）を入れる
+・ハッシュタグ10個</div>
+
+        <h3>③ 自分のビジネス情報を入れる</h3>
+        <p>ターゲット・職業・発信テーマを伝えると、自分の投稿らしくなります。</p>
+        <div class="prompt-box">【私のビジネス情報】
+・職業：飲食店オーナー
+・ターゲット：SNS集客に悩む経営者
+・発信テーマ：AI×経営の時短術</div>
+
+        <div class="callout">
+          📌 この3つを組み合わせたのが、次のCHAPTERで使う「マスタープロンプト」です。毎回この形式で送るだけで、質の高い投稿文が作れます。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 2：プロンプトの基本",
+      title: "【実践】最初のプロンプトを送ってみる",
+      content: `
+        <span class="chapter-tag">CHAPTER 2 — プロンプトの基本</span>
+        <h2>【実践】最初のプロンプトを送ってみる</h2>
+        <hr class="divider">
+        <p>学んだことを使って、実際にプロンプトを送ってみましょう。</p>
+        <p>下のプロンプトをコピーして、[ ]の中を自分の情報に書き換えてClaudeに送ってください。</p>
+
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。
+
+【私のビジネス情報】
+・職業/肩書き：[例：飲食店オーナー]
+・ターゲット：[例：SNS集客に悩む経営者]
+・発信テーマ：[例：AI×経営の時短術]
+
+【今回の投稿テーマ】
+[例：朝の準備を時短する方法]
+
+【条件】
+・文字数：200〜300文字
+・改行多め
+・最後に行動を促す一言を入れる
+・ハッシュタグ10個
+
+【トーン】
+親しみやすく、でも専門家らしい口調</div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：今すぐやってみよう</h4>
+          <p>[ ]の中を自分のビジネス情報に書き換えてClaudeに送ってください。投稿文が出てきたら成功です！</p>
+        </div>
+
+        <div class="callout">
+          💡 最初から完璧でなくてOKです。「もっとカジュアルに」「もっと短く」と追加指示して調整できます。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 3：Instagram投稿文を作る",
+      title: "教育系投稿を作る",
+      content: `
+        <span class="chapter-tag">CHAPTER 3 — Instagram投稿文を作る</span>
+        <h2>教育系投稿を作る（フォロワーを増やす投稿）</h2>
+        <hr class="divider">
+        <p>教育系投稿は、フォロワーに「有益な情報を教える」投稿です。フォロワーを増やすのに最も効果的なタイプです。</p>
+
+        <h3>教育系投稿のプロンプト</h3>
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。
+
+以下の条件で教育系の投稿文を作成してください。
+
+【私のビジネス情報】
+・職業/肩書き：[例：飲食店オーナー]
+・ターゲット：[例：SNS集客に悩む経営者]
+・発信テーマ：[例：AI×経営の時短術]
+
+【今回の投稿テーマ】
+[例：Claudeを使うと投稿文が5分で作れる]
+
+【投稿の条件】
+・冒頭1行目：思わず続きを読みたくなるフック（疑問文 or 驚きの事実）
+・本文：200〜300文字
+・改行を多用して読みやすくする
+・最後：行動を促すCTA（「詳しくはプロフリンクから」など）
+・ハッシュタグ：関連性の高いもの10個
+
+【トーン】
+親しみやすく、でも専門家らしい口調</div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：教育系投稿を1本作ってみよう</h4>
+          <p>[ ]を自分の情報に書き換えてClaudeに送ってください。</p>
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 3：Instagram投稿文を作る",
+      title: "ストーリー系投稿を作る",
+      content: `
+        <span class="chapter-tag">CHAPTER 3 — Instagram投稿文を作る</span>
+        <h2>ストーリー系投稿を作る（共感を集める投稿）</h2>
+        <hr class="divider">
+        <p>ストーリー系投稿は、あなた自身の体験談を語る投稿です。「この人わかってくれる」という共感を生み、フォロワーとの信頼関係を深めます。</p>
+
+        <h3>ストーリー系投稿のプロンプト</h3>
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。
+
+以下の条件でストーリー型の投稿文を作成してください。
+
+【私のビジネス情報】
+・職業/肩書き：[例：飲食店オーナー]
+・ターゲット：[例：SNS集客に悩む経営者]
+
+【ストーリーの素材】
+・過去の悩み：[例：毎日投稿するネタが思いつかなかった]
+・転機：[例：Claudeを使い始めた]
+・今の状態：[例：週5投稿が30分で完成するようになった]
+
+【投稿の条件】
+・構成：悩み → 転機 → 解決 → 読者へのメッセージ
+・200〜300文字
+・改行多め
+・ハッシュタグ10個
+
+【トーン】
+リアルで共感しやすい、飾らない口調</div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：あなた自身のストーリーで1本作ってみよう</h4>
+          <p>過去の悩み・転機・今の状態を書き込んでClaudeに送ってください。</p>
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 3：Instagram投稿文を作る",
+      title: "商品告知投稿を作る",
+      content: `
+        <span class="chapter-tag">CHAPTER 3 — Instagram投稿文を作る</span>
+        <h2>商品告知投稿を作る（売上につなげる投稿）</h2>
+        <hr class="divider">
+        <p>商品告知投稿は、フォロワーを購買に導く投稿です。週1回程度が適切です。</p>
+
+        <h3>商品告知投稿のプロンプト</h3>
+        <div class="prompt-box">あなたはInstagramのプロのコピーライターです。
+
+以下の条件で商品告知の投稿文を作成してください。
+
+【商品情報】
+・商品名：[例：Claude×Instagram自動化講座]
+・ターゲット：[例：SNS集客に悩む経営者]
+・解決できる悩み：[例：毎日投稿のネタ切れ・時間不足]
+・得られる未来：[例：週5投稿が30分で完成する]
+・価格：[例：2,980円]
+・締め切り：[例：今月末まで]
+
+【投稿の条件】
+・冒頭：ターゲットに刺さる問いかけ
+・本文：商品の価値を感情的に伝える（200〜300文字）
+・最後：「プロフィールのリンクから詳細を確認してください」
+・ハッシュタグ10個
+
+【トーン】
+背中を押すような、熱量のある口調</div>
+
+        <div class="practice-box">
+          <h4>✅ 実践：自分の商品で告知投稿を作ってみよう</h4>
+          <p>[ ]を自分の商品情報に書き換えて送ってください。</p>
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 3：Instagram投稿文を作る",
+      title: "【実践】自分のビジネスで1本作る",
+      content: `
+        <span class="chapter-tag">CHAPTER 3 — Instagram投稿文を作る</span>
+        <h2>【実践】自分のビジネスで1本投稿を完成させる</h2>
+        <hr class="divider">
+        <p>ここまで3種類の投稿プロンプトを学びました。今度は、実際に「今日投稿できるレベル」まで仕上げてみましょう。</p>
+
+        <h3>仕上げの手順</h3>
+        <ol>
+          <li>3種類の中から好きなプロンプトを選ぶ</li>
+          <li>[ ]を自分の情報に書き換えてClaudeに送る</li>
+          <li>出てきた文章を読む</li>
+          <li>気になる部分があれば追加指示で修正する</li>
+          <li>完成したらInstagramにコピペする</li>
+        </ol>
+
+        <h3>調整の追加プロンプト</h3>
+        <div class="prompt-box"># 文章が硬い場合
+「もっとカジュアルで親しみやすい口調に書き直してください」
+
+# 短くしたい場合
+「150文字以内に圧縮してください」
+
+# 別パターンが欲しい場合
+「同じテーマで別のアプローチで3パターン作ってください」
+
+# ハッシュタグだけ変えたい場合
+「ハッシュタグを[業種]向けのものに変えてください」</div>
+
+        <div class="callout">
+          💡 Claudeとの会話はやり直しができます。「なんか違う」と感じたらどんどん追加指示を出してください。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 4：週間カレンダーを自動作成",
+      title: "1週間分のネタをまとめて作る方法",
+      content: `
+        <span class="chapter-tag">CHAPTER 4 — 週間カレンダーを自動作成</span>
+        <h2>1週間分のネタをまとめて作る方法</h2>
+        <hr class="divider">
+        <p>毎日「今日何を投稿しよう」と考えるのは非効率です。月曜日に1週間分まとめて決めてしまいましょう。</p>
+
+        <h3>週間カレンダー作成プロンプト</h3>
+        <div class="prompt-box">あなたはInstagramのコンテンツプランナーです。
+
+以下の情報をもとに、1週間分（7日間）のInstagram投稿カレンダーを作成してください。
+
+【私のビジネス情報】
+・職業/肩書き：[例：飲食店オーナー]
+・ターゲット：[例：SNS集客に悩む経営者]
+・発信テーマ：[例：AI×経営の時短術]
+・告知したい商品：[例：Claude×Instagram自動化講座 2,980円]
+
+【条件】
+・教育系投稿：4日
+・ストーリー系投稿：2日
+・商品告知：1日
+・各投稿の「タイトル（テーマ）」と「冒頭の1文」だけ作成する
+・表形式で出力する（日付 / 種類 / テーマ / 冒頭1文）</div>
+
+        <div class="callout">
+          💡 週間カレンダーが出来上がったら、各日のテーマを見ながらCHAPTER 3のプロンプトで投稿文を作ります。毎週月曜10分の作業だけでその週の投稿が全部揃います。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 4：週間カレンダーを自動作成",
+      title: "【実践】来週のカレンダーを今すぐ作る",
+      content: `
+        <span class="chapter-tag">CHAPTER 4 — 週間カレンダーを自動作成</span>
+        <h2>【実践】来週のカレンダーを今すぐ作る</h2>
+        <hr class="divider">
+        <p>実際に来週分のカレンダーを作ってみましょう。</p>
+
+        <div class="practice-box">
+          <h4>✅ 実践手順</h4>
+          <p>① 前のページのプロンプトをコピーする<br>
+          ② [ ]を自分の情報に書き換える<br>
+          ③ Claudeに送る<br>
+          ④ 表形式のカレンダーが出てきたら完成</p>
+        </div>
+
+        <h3>カレンダーができたら</h3>
+        <p>出てきたカレンダーをそのままメモ帳やNotionにコピーしておきます。</p>
+        <p>あとは毎日そのテーマを見ながら、CHAPTER 3のプロンプトで投稿文を作るだけです。</p>
+
+        <div class="callout">
+          📌 週間カレンダーを作る習慣ができると、「今日何を投稿しよう」という悩みがゼロになります。この習慣が一番大事です。
+        </div>
+      `
+    },
+    {
+      chapter: "CHAPTER 5：運用ルーティンを組む",
+      title: "週1時間で週5投稿を維持する仕組み",
+      content: `
+        <span class="chapter-tag">CHAPTER 5 — 運用ルーティンを組む</span>
+        <h2>週1時間で週5投稿を維持する仕組み</h2>
+        <hr class="divider">
+        <p>ここまで学んだことを組み合わせて、実際の運用ルーティンを組みましょう。</p>
+
+        <h3>週間ルーティン</h3>
+        <ul>
+          <li><strong>月曜（10分）：</strong>週間カレンダーをClaudeで作成</li>
+          <li><strong>火〜土（各10〜15分）：</strong>その日のテーマで投稿文を作成→投稿</li>
+          <li><strong>日曜（5分）：</strong>1週間の反応を確認・改善点をメモ</li>
+        </ul>
+
+        <h3>1回の投稿作業（約15分）</h3>
+        <ol>
+          <li>カレンダーで今日のテーマを確認（1分）</li>
+          <li>プロンプトに情報を入力してClaudeに送る（3分）</li>
+          <li>出てきた文章を確認・調整（5分）</li>
+          <li>画像を用意する（任意）（5分）</li>
+          <li>Instagramに投稿（1分）</li>
+        </ol>
+
+        <div class="callout">
+          💡 最初から完璧を目指さなくてOKです。まず「続けること」が最重要です。週5投稿を3ヶ月続けると、フォロワーと信頼が積み上がっていきます。
+        </div>
+
+        <h3>次のステップへ</h3>
+        <p>この講座でInstagramの投稿自動化の基礎は完成しました。</p>
+        <p>さらに深く学びたい方・もっと本格的に集客を伸ばしたい方向けに、<strong>個別コンサルと上位講座</strong>をご用意しています。</p>
+        <p>プロフィールのリンクからご確認ください。</p>
+
+        <div class="practice-box">
+          <h4>🎉 講座完了おめでとうございます！</h4>
+          <p>全レッスンを完了しました。今日から早速、週間カレンダーを作って投稿を始めてみてください。</p>
+        </div>
+      `
+    }
+  ];
+
+  const STORAGE_KEY = 'claude_ig_progress';
+  let completed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let current = 0;
+
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+  }
+
+  function updateProgress() {
+    const pct = Math.round((completed.length / LESSONS.length) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = `${completed.length} / ${LESSONS.length} 完了`;
+  }
+
+  function buildNav() {
+    const nav = document.getElementById('nav');
+    nav.innerHTML = '';
+    let lastChapter = '';
+
+    LESSONS.forEach((lesson, i) => {
+      if (lesson.chapter !== lastChapter) {
+        const label = document.createElement('div');
+        label.className = 'chapter-label';
+        label.textContent = lesson.chapter;
+        nav.appendChild(label);
+        lastChapter = lesson.chapter;
+      }
+
+      const btn = document.createElement('button');
+      btn.className = 'lesson-btn' + (i === current ? ' active' : '') + (completed.includes(i) ? ' done' : '');
+
+      const svg = `<svg class="check" viewBox="0 0 20 20" fill="currentColor">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        ${completed.includes(i) ? '<path d="M6 10l3 3 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>': ''}
+      </svg>`;
+
+      btn.innerHTML = svg + lesson.title;
+      btn.onclick = () => goto(i);
+      nav.appendChild(btn);
+    });
+  }
+
+  function goto(i) {
+    current = i;
+    const lesson = LESSONS[i];
+    document.getElementById('content').innerHTML = lesson.content + `
+      <div class="nav-btns">
+        ${i > 0 ? `<button class="nav-btn prev" onclick="goto(${i-1})">← 前へ</button>` : ''}
+        ${i < LESSONS.length - 1 ? `<button class="nav-btn next" onclick="goto(${i+1})">次へ →</button>` : ''}
+      </div>
+    `;
+    document.getElementById('topbar-title').textContent = lesson.title;
+
+    const btn = document.getElementById('complete-btn');
+    if (completed.includes(i)) {
+      btn.textContent = '✓ 完了済み';
+      btn.className = 'done';
+    } else {
+      btn.textContent = '完了にする';
+      btn.className = '';
+    }
+
+    buildNav();
+    window.scrollTo(0, 0);
+    document.getElementById('main').scrollTo(0, 0);
+  }
+
+  function toggleComplete() {
+    if (completed.includes(current)) {
+      completed = completed.filter(x => x !== current);
+    } else {
+      completed.push(current);
+    }
+    save();
+    updateProgress();
+    goto(current);
+  }
+
+  // 初期化
+  buildNav();
+  goto(0);
+  updateProgress();
+</script>
+</body>
+</html>
